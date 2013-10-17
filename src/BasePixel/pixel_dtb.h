@@ -441,19 +441,18 @@ public:
 	int32_t ChipEfficiency(int16_t nTriggers, int32_t trim[], double res[]); 
 	void DacDac(int32_t dac1, int32_t dacRange1, int32_t dac2, int32_t dacRange2, int32_t nTrig, int32_t result[]);
 	void AddressLevels(int32_t position, int32_t result[]){ return;}
-    int32_t CountReadouts(int32_t nTriggers);
-	int32_t CountReadouts(int32_t nTriggers, int32_t chipId);
-	int32_t CountReadouts(int32_t nTriggers, int32_t dacReg, int32_t dacValue);
-    int32_t Threshold(int32_t thrLevel, int32_t nTrig, int32_t dacReg, int32_t dacMin, int32_t dacMax, bool reverseMode);    
-	int32_t PixelThreshold(int32_t col, int32_t row, int32_t start, int32_t step, int32_t thrLevel, int32_t nTrig, int32_t dacReg, int32_t xtalk, int32_t cals, int32_t trim);
-    int32_t PixelThresholdXtalk(int32_t col, int32_t row, int32_t start, int32_t step, int32_t thrLevel, int32_t nTrig, int32_t dacReg, int32_t xtalk, int32_t cals, int32_t trim);    
+    RPC_EXPORT int32_t CountReadouts(int32_t nTriggers);
+	RPC_EXPORT int32_t CountReadouts(int32_t nTriggers, int32_t chipId);
+	RPC_EXPORT int32_t CountReadouts(int32_t nTriggers, int32_t dacReg, int32_t dacValue);
+    //int32_t Threshold(int32_t thrLevel, int32_t nTrig, int32_t dacReg, int32_t dacMin, int32_t dacMax, bool reverseMode);    
+	RPC_EXPORT int32_t PixelThreshold(int32_t col, int32_t row, int32_t start, int32_t step, int32_t thrLevel, int32_t nTrig, int32_t dacReg, int32_t xtalk, int32_t cals, int32_t trim);
 	int32_t ChipThreshold(int32_t start, int32_t step, int32_t thrLevel, int32_t nTrig, int32_t dacReg, int32_t xtalk, int32_t cals, int32_t trim[], int32_t res[]);
 	void ChipThresholdIntern(int32_t start[], int32_t step, int32_t thrLevel, int32_t nTrig, int32_t dacReg, int32_t xtalk, int32_t cals, int32_t trim[], int32_t res[]);
 	int32_t SCurve(int32_t nTrig, int32_t dacReg, int32_t threshold, int32_t res[]);
     int32_t SCurve(int32_t nTrig, int32_t dacReg, int32_t thr[], int32_t chipId[], int32_t sCurve[]);
 	int32_t SCurveColumn(int32_t column, int32_t nTrig, int32_t dacReg, int32_t thr[], int32_t trims[], int32_t chipId[], int32_t res[]);
-    int32_t PH(int32_t col, int32_t row);
-    bool test_pixel_address(int32_t col, int32_t row);
+    RPC_EXPORT int32_t PH(int32_t col, int32_t row);
+    RPC_EXPORT bool test_pixel_address(int32_t col, int32_t row);
     // ----------------------------
 
 

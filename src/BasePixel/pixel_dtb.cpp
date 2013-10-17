@@ -300,7 +300,7 @@ int32_t CTestboard::ChipEfficiency(int16_t nTriggers, int32_t trim[], double res
     //roc_SetDAC(CtrlReg,0);
     return 1;
 }
-
+/*
 int32_t CTestboard::CountReadouts(int32_t nTrig, int32_t chipId)
 {
     roc_I2cAddr(chipId);
@@ -341,10 +341,19 @@ int32_t CTestboard::CountReadouts(int32_t nTriggers)
     } catch (int) {}
     return nHits;
 }
-
+*/
 
 void CTestboard::DacDac(int32_t dac1, int32_t dacRange1, int32_t dac2, int32_t dacRange2, int32_t nTrig, int32_t res[])
 {
+    /*vector<uint16_t> res;
+    uint8_t the_value = DacDac_dtb(res, dac1, dacRange1, dac2, dacRange2, nTrig);
+    cout << the_value << endl;
+    cout << res.size() << endl;
+    for (vector<uint16_t>::const_iterator i= res.begin(); i != res.end(); ++i ) {
+        cout << "Res: " << *i << endl;
+    }
+    //resArr = &res[0];
+    */
 	for (int i = 0; i < dacRange1; i++)
 	{
 		roc_SetDAC(dac1, i);
@@ -411,7 +420,7 @@ void CTestboard::SetChip(int iChip)
 }
 
 // == Thresholds ===================================================
-
+/*
 int32_t CTestboard::Threshold(int32_t thrLevel, int32_t nTrig, int32_t dacReg, int32_t dacMin, int32_t dacMax, bool reverseMode)
 {
     // test if threshold is already reached
@@ -463,7 +472,7 @@ int32_t CTestboard::PixelThreshold(int32_t col, int32_t row, int32_t start, int3
     roc_ClrCal();
     roc_Pix_Mask(col, row);
 	return res;
-}
+}*/
 /*
 int32_t CTestboard::Threshold(int32_t start, int32_t step, int32_t thrLevel, int32_t nTrig, int32_t dacReg, bool test = true)
 {
@@ -659,7 +668,7 @@ int32_t CTestboard::SCurveColumn(int32_t iColumn, int32_t nTrig, int32_t dacReg,
 	}
     return 1;
 }
-
+/*
 int32_t CTestboard::PH(int32_t col, int32_t row)
 {
 
@@ -715,6 +724,8 @@ int32_t CTestboard::PH(int32_t col, int32_t row)
   
     }
 
+*/
+/*
 bool CTestboard::test_pixel_address(int32_t col, int32_t row)
 {
     Daq_Open(5000);
@@ -752,3 +763,4 @@ bool CTestboard::test_pixel_address(int32_t col, int32_t row)
     return false;
   
 }
+*/
