@@ -444,7 +444,7 @@ public:
     int32_t CountReadouts(int32_t nTriggers);
 	int32_t CountReadouts(int32_t nTriggers, int32_t chipId);
 	int32_t CountReadouts(int32_t nTriggers, int32_t dacReg, int32_t dacValue);
-    int32_t Threshold(int32_t start, int32_t step, int32_t thrLevel, int32_t nTrig, int32_t dacReg);    
+    int32_t Threshold(int32_t thrLevel, int32_t nTrig, int32_t dacReg, int32_t dacMin, int32_t dacMax, bool reverseMode);    
 	int32_t PixelThreshold(int32_t col, int32_t row, int32_t start, int32_t step, int32_t thrLevel, int32_t nTrig, int32_t dacReg, int32_t xtalk, int32_t cals, int32_t trim);
     int32_t PixelThresholdXtalk(int32_t col, int32_t row, int32_t start, int32_t step, int32_t thrLevel, int32_t nTrig, int32_t dacReg, int32_t xtalk, int32_t cals, int32_t trim);    
 	int32_t ChipThreshold(int32_t start, int32_t step, int32_t thrLevel, int32_t nTrig, int32_t dacReg, int32_t xtalk, int32_t cals, int32_t trim[], int32_t res[]);
