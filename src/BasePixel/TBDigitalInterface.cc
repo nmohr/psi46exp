@@ -224,7 +224,9 @@ void TBDigitalInterface::Initialize(ConfigParameters * configParameters)
 					"%s"
 					"-------------------------------------------------\n", info.c_str());
 			cTestboard->Welcome();
-			cTestboard->Flush();
+            cTestboard->Flush();
+			gDelay->Mdelay(3500);
+
 		}
 		catch(CRpcError &e)
 		{
