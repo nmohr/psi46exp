@@ -412,45 +412,32 @@ void CTestboard::SetChip(int iChip)
 
 // == Thresholds ===================================================
 
-
-int32_t CTestboard::Threshold(int32_t start, int32_t step, int32_t thrLevel, int32_t nTrig, int32_t dacReg)
+int32_t CTestboard::Threshold(int32_t thrLevel, int32_t nTrig, int32_t dacReg, int32_t dacMin, int32_t dacMax, bool reverseMode)
 {
-	int32_t threshold = start, newValue, oldValue, result;
-	int stepAbs;
-	if (step < 0) stepAbs = -step; else stepAbs = step;
-			
-	newValue = CountReadouts(nTrig, dacReg, threshold);
-	if (newValue > thrLevel)
-	{
-		do
-		{
-			threshold-=step;
-			oldValue = newValue;
-			newValue = CountReadouts(nTrig, dacReg, threshold);
-		}
-		while ((newValue > thrLevel) && (threshold > (stepAbs - 1)) && (threshold < (256 - stepAbs)));
-
-		if (oldValue - thrLevel > thrLevel - newValue) result = threshold;
-		else result = threshold+step;
-	}
-	else
-	{
-		do
-		{
-			threshold+=step;
-			oldValue = newValue;
-			newValue = CountReadouts(nTrig, dacReg, threshold);
-		}
-		while ((newValue <= thrLevel) && (threshold > (stepAbs - 1)) && (threshold < (256 - stepAbs)));
-
-		if (thrLevel - oldValue > newValue - thrLevel) result = threshold;
-		else result = threshold-step;
-	}
-
-	if (result > 255) result = 255;
-	if (result < 0) result = 0;
-
-	return result;
+    // test if array is empty
+    if (dacMax < dacMin && !reverseMode)
+        // set is empty, so return value showing not found
+        return dacMin;
+    if (dacMin > dacMax && reverseMode)
+        // set is empty, so return value showing not found
+        return dacMax;
+     else
+    {
+      // calculate midpoint to cut set in half
+      int32_t dacMid = dacMin + ((dacMax - dacMin) / 2);
+      int32_t thrMid = CountReadouts(nTrig, dacReg, dacMid);
+      //cout << "midPoint : " << dacMid << "  Threshold : " << thrMid  << " thrLevel: " << thrLevel << " dacMin: " << dacMin << " dacMax: " << dacMax << endl;
+      // three-way comparison
+      if ((thrMid > thrLevel && !reverseMode) || (thrMid < thrLevel && reverseMode))
+        // threshold is in lower subset
+        return Threshold(thrLevel, nTrig, dacReg, dacMin, dacMid-1, reverseMode);
+      else if ((thrMid < thrLevel && !reverseMode) || (thrMid > thrLevel && reverseMode))
+        // threshold is in upper subset
+        return Threshold(thrLevel, nTrig, dacReg, dacMid+1, dacMax, reverseMode);
+      else
+        // key has been found
+        return dacMid;
+    }
 }
 
 int32_t CTestboard::PixelThreshold(int32_t col, int32_t row, int32_t start, int32_t step, int32_t thrLevel, int32_t nTrig, int32_t dacReg, int32_t xtalk, int32_t cals, int32_t trim)
@@ -466,11 +453,79 @@ int32_t CTestboard::PixelThreshold(int32_t col, int32_t row, int32_t start, int3
 	if (cals) roc_Pix_Cal(col, calRow, true);
 	else roc_Pix_Cal(col, calRow, false);
 
-	int32_t res = Threshold(start, step, thrLevel, nTrig, dacReg);
+    bool reverseMode = false;
+    if (step < 0) reverseMode = true;
+
+	int32_t res = Threshold(thrLevel, nTrig, dacReg, 20, 60, reverseMode);
+    //Check subpart case no threshold was missed
+    if (res >= 255 && !reverseMode) res = Threshold(thrLevel, nTrig, dacReg, 0, 128, reverseMode);
+    if (res <= 0 && reverseMode) res = Threshold(thrLevel, nTrig, dacReg, 128, 256, reverseMode);
+    cout << "Result: " << res << endl;
     roc_ClrCal();
     roc_Pix_Mask(col, row);
 	return res;
 }
+/*
+int32_t CTestboard::Threshold(int32_t start, int32_t step, int32_t thrLevel, int32_t nTrig, int32_t dacReg, bool test = true)
+{
+        int32_t threshold = start, newValue, oldValue, result;
+        int stepAbs;
+        if (step < 0) stepAbs = -step; else stepAbs = step;
+                        
+        newValue = CountReadouts(nTrig, dacReg, threshold);
+        if (newValue > thrLevel)
+        {
+                do
+                {
+                        threshold-=step;
+                        oldValue = newValue;
+                        newValue = CountReadouts(nTrig, dacReg, threshold);
+                }
+                while ((newValue > thrLevel) && (threshold > (stepAbs - 1)) && (threshold < (256 - stepAbs)));
+
+                if (oldValue - thrLevel > thrLevel - newValue) result = threshold;
+                else result = threshold+step;
+        }
+        else
+        {
+                do
+                {
+                        threshold+=step;
+                        oldValue = newValue;
+                        newValue = CountReadouts(nTrig, dacReg, threshold);
+                }
+                while ((newValue <= thrLevel) && (threshold > (stepAbs - 1)) && (threshold < (256 - stepAbs)));
+
+                if (thrLevel - oldValue > newValue - thrLevel) result = threshold;
+                else result = threshold-step;
+        }
+
+        if (result > 255) result = 255;
+        if (result < 0) result = 0;
+
+        return result;
+}
+
+
+int32_t CTestboard::PixelThreshold(int32_t col, int32_t row, int32_t start, int32_t step, int32_t thrLevel, int32_t nTrig, int32_t dacReg, int32_t xtalk, int32_t cals, int32_t trim)
+{
+        int calRow = row;
+        roc_Pix_Trim(col, row, trim);
+
+        if (xtalk)
+        {
+                if (row == ROC_NUMROWS - 1) calRow = row - 1;
+                else calRow = row + 1;
+        }
+        if (cals) roc_Pix_Cal(col, calRow, true);
+        else roc_Pix_Cal(col, calRow, false);
+
+        int32_t res = Threshold(start, step, thrLevel, nTrig, dacReg);
+    roc_ClrCal();
+    roc_Pix_Mask(col, row);
+        return res;
+}
+*/
 
 void CTestboard::ChipThresholdIntern(int32_t start[], int32_t step, int32_t thrLevel, int32_t nTrig, int32_t dacReg, int32_t xtalk, int32_t cals, int32_t trim[], int32_t res[])
 {
@@ -522,7 +577,7 @@ int32_t CTestboard::ChipThreshold(int32_t start, int32_t step, int32_t thrLevel,
   }
   
   for (int i = 0; i < ROC_NUMROWS * ROC_NUMCOLS; i++) roughThr[i] = startValue;
-  ChipThresholdIntern(roughThr, roughStep, 0, 1, dacReg, xtalk, cals, trim, roughThr);
+  //ChipThresholdIntern(roughThr, roughStep, 0, 1, dacReg, xtalk, cals, trim, roughThr);
   ChipThresholdIntern(roughThr, step, thrLevel, nTrig, dacReg, xtalk, cals, trim, res);  
   return 1;
 }
