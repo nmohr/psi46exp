@@ -414,12 +414,12 @@ void CTestboard::SetChip(int iChip)
 
 int32_t CTestboard::Threshold(int32_t thrLevel, int32_t nTrig, int32_t dacReg, int32_t dacMin, int32_t dacMax, bool reverseMode)
 {
-    // test if array is empty
+    // test if threshold is already reached
     if (dacMax < dacMin && !reverseMode)
-        // set is empty, so return value showing not found
+        // return value is dacMin
         return dacMin;
     if (dacMin > dacMax && reverseMode)
-        // set is empty, so return value showing not found
+        // return value
         return dacMax;
      else
     {
@@ -435,7 +435,7 @@ int32_t CTestboard::Threshold(int32_t thrLevel, int32_t nTrig, int32_t dacReg, i
         // threshold is in upper subset
         return Threshold(thrLevel, nTrig, dacReg, dacMid+1, dacMax, reverseMode);
       else
-        // key has been found
+        // threshold has been found
         return dacMid;
     }
 }
@@ -456,11 +456,10 @@ int32_t CTestboard::PixelThreshold(int32_t col, int32_t row, int32_t start, int3
     bool reverseMode = false;
     if (step < 0) reverseMode = true;
 
-	int32_t res = Threshold(thrLevel, nTrig, dacReg, 20, 60, reverseMode);
+	int32_t res = Threshold(thrLevel, nTrig, dacReg, 0, 256, reverseMode);
     //Check subpart case no threshold was missed
     if (res >= 255 && !reverseMode) res = Threshold(thrLevel, nTrig, dacReg, 0, 128, reverseMode);
     if (res <= 0 && reverseMode) res = Threshold(thrLevel, nTrig, dacReg, 128, 256, reverseMode);
-    cout << "Result: " << res << endl;
     roc_ClrCal();
     roc_Pix_Mask(col, row);
 	return res;
