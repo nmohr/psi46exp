@@ -161,7 +161,7 @@ void PHTest::PhDac(char * dacName)
             SetDAC(dacName, dac);
             ai->CDelay(500);
             ai->Flush();
-            histo->SetBinContent(dac + 1, ai->PH(col, row));
+            histo->SetBinContent(dac + 1, ai->PH(col, row, nTrig));
         }
     histograms->Add(histo);
     return;
@@ -255,7 +255,7 @@ void PHTest::PulseHeightRocDigital(int data [])
 
     for (int col = 0; col < 52; col++) {
         for (int row = 0; row < 80; row++) {
-            data[80 * col + row] = ai->PH(col, row);
+            data[80 * col + row] = ai->PH(col, row, nTrig);
         }
     }
 

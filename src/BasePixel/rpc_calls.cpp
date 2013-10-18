@@ -87,7 +87,7 @@ const char *CTestboard::rpc_cmdName[] =
 	/*    73 */ "CountReadouts$ii",
 	/*    74 */ "CountReadouts$iii",
 	/*    75 */ "CountReadouts$iiii",
-	/*    76 */ "PH$iii",
+	/*    76 */ "PH$iiis",
 	/*    77 */ "PixelThreshold$iiiiiiiiiii",
 	/*    78 */ "test_pixel_address$bii",
 	/*    79 */ "testColPixel$bCC2C",
@@ -1229,7 +1229,7 @@ int32_t CTestboard::CountReadouts(int32_t rpc_par1, int32_t rpc_par2, int32_t rp
 	return rpc_par0;
 }
 
-int32_t CTestboard::PH(int32_t rpc_par1, int32_t rpc_par2)
+int32_t CTestboard::PH(int32_t rpc_par1, int32_t rpc_par2, int16_t rpc_par3)
 { RPC_PROFILING
 	int32_t rpc_par0;
 	try {
@@ -1239,6 +1239,7 @@ int32_t CTestboard::PH(int32_t rpc_par1, int32_t rpc_par2)
 	msg.Create(rpc_clientCallId);
 	msg.Put_INT32(rpc_par1);
 	msg.Put_INT32(rpc_par2);
+	msg.Put_INT16(rpc_par3);
 	msg.Send(*rpc_io);
 	rpc_io->Flush();
 	msg.Receive(*rpc_io);

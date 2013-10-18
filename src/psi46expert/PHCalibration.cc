@@ -287,7 +287,7 @@ void PHCalibration::PulseHeightRocDigital(int data [])
 
     for (int col = 0; col < 52; col++) {
         for (int row = 0; row < 80; row++) {
-            data[80 * col + row] = ai->PH(col, row);
+            data[80 * col + row] = ai->PH(col, row, nTrig);
         }
     }
 

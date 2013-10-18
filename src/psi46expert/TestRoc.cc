@@ -907,7 +907,7 @@ int TestRoc::AdjustPulseHeightRange(int range)
         SetDAC("Vcal", i == 0 ? min_vcal : max_vcal);
         ph_test = new PHTest(testRangeSingle, testParameters, tbInterface);
         ph_test->SetMode(17); // 17 = VOffsetR0 DAC
-        ph_test->SetNTrig(1);
+        ph_test->SetNTrig(5);
         ph_test->RocAction(this);
         TH1D * voffset_ro_scan = (TH1D *)(ph_test->GetHistos()->First());
         delete ph_test;
@@ -943,7 +943,7 @@ int TestRoc::AdjustPulseHeightRange(int range)
     SetDAC("Vcal", max_vcal);
     ph_test = new PHTest(testRangeSingle, testParameters, tbInterface);
     ph_test->SetMode(20); // 20 = VIref_ADC DAC
-    ph_test->SetNTrig(1);
+    ph_test->SetNTrig(5);
     ph_test->RocAction(this);
     TH1D * viref_adc_scan = (TH1D *)(ph_test->GetHistos()->First());
     delete ph_test;
@@ -989,7 +989,7 @@ int TestRoc::AdjustPulseHeightRange(int range)
         SetDAC("Vcal", i == 0 ? min_vcal : max_vcal);
         ph_test = new PHTest(testRangeFull, testParameters, tbInterface);
         ph_test->SetMode(0);
-        ph_test->SetNTrig(1);
+        ph_test->SetNTrig(5);
         ph_test->RocAction(this);
         TH2D * ph_map = (TH2D *)(ph_test->GetHistos()->First());
         ph_map->SetName(Form("ph_adjust_map_vcal_%s", i == 0 ? "low" : "high"));
@@ -1058,7 +1058,7 @@ int TestRoc::AdjustPulseHeightRange(int range)
         SetDAC("Vcal", i == 0 ? min_vcal : max_vcal);
         ph_test = new PHTest(testRangeFull, testParameters, tbInterface);
         ph_test->SetMode(0);
-        ph_test->SetNTrig(1);
+        ph_test->SetNTrig(5);
         ph_test->RocAction(this);
         TH2D * ph_map = (TH2D *)(ph_test->GetHistos()->First());
         ph_map->SetName(Form("ph_adjust_final_map_vcal_%s", i == 0 ? "low" : "high"));

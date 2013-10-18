@@ -420,7 +420,6 @@ void CTestboard::SetChip(int iChip)
 }
 
 // == Thresholds ===================================================
-/*
 int32_t CTestboard::Threshold(int32_t thrLevel, int32_t nTrig, int32_t dacReg, int32_t dacMin, int32_t dacMax, bool reverseMode)
 {
     // test if threshold is already reached
@@ -449,7 +448,7 @@ int32_t CTestboard::Threshold(int32_t thrLevel, int32_t nTrig, int32_t dacReg, i
     }
 }
 
-int32_t CTestboard::PixelThreshold(int32_t col, int32_t row, int32_t start, int32_t step, int32_t thrLevel, int32_t nTrig, int32_t dacReg, int32_t xtalk, int32_t cals, int32_t trim)
+int32_t CTestboard::PixelThresholdExtern(int32_t col, int32_t row, int32_t start, int32_t step, int32_t thrLevel, int32_t nTrig, int32_t dacReg, int32_t xtalk, int32_t cals, int32_t trim)
 {
 	int calRow = row;
 	roc_Pix_Trim(col, row, trim);
@@ -467,12 +466,19 @@ int32_t CTestboard::PixelThreshold(int32_t col, int32_t row, int32_t start, int3
 
 	int32_t res = Threshold(thrLevel, nTrig, dacReg, 0, 256, reverseMode);
     //Check subpart case no threshold was missed
-    if (res >= 255 && !reverseMode) res = Threshold(thrLevel, nTrig, dacReg, 0, 128, reverseMode);
-    if (res <= 0 && reverseMode) res = Threshold(thrLevel, nTrig, dacReg, 128, 256, reverseMode);
+    if (res >= 255 && !reverseMode) {
+        res = Threshold(thrLevel, nTrig, dacReg, 0, 128, reverseMode);
+        if (res >= 128) res = 256;
+    }
+    if (res <= 0 && reverseMode) {
+        res = Threshold(thrLevel, nTrig, dacReg, 128, 256, reverseMode);
+        if (res <= 128) res = 0;
+    }
     roc_ClrCal();
     roc_Pix_Mask(col, row);
 	return res;
-}*/
+}
+
 /*
 int32_t CTestboard::Threshold(int32_t start, int32_t step, int32_t thrLevel, int32_t nTrig, int32_t dacReg, bool test = true)
 {

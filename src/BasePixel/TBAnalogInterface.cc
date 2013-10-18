@@ -1129,9 +1129,9 @@ void TBAnalogInterface::PHDac(int dac, int dacRange, int nTrig, int position, sh
     cTestboard->PHDac(dac, dacRange, nTrig, position, result);
 }
 
-int TBAnalogInterface::PH(int col, int row)
+int TBAnalogInterface::PH(int col, int row, int nTrig)
 {
-    return cTestboard->PH(col, row);
+    return cTestboard->PH(col, row, nTrig);
 }
 
 bool TBAnalogInterface::test_pixel_address(int col, int row)
