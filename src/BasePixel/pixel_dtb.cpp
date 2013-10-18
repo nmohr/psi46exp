@@ -420,8 +420,10 @@ void CTestboard::SetChip(int iChip)
 }
 
 // == Thresholds ===================================================
-int32_t CTestboard::Threshold(int32_t thrLevel, int32_t nTrig, int32_t dacReg, int32_t dacMin, int32_t dacMax, bool reverseMode)
+int32_t CTestboard::ThresholdBinary(int32_t thrLevel, int32_t nTrig, int32_t dacReg, int32_t dacMin, int32_t dacMax, bool reverseMode)
 {
+    int step_size = 1;
+    if (reverseMode) step_size = 3;
     // test if threshold is already reached
     if (dacMax < dacMin && !reverseMode)
         // return value is dacMin
@@ -431,20 +433,43 @@ int32_t CTestboard::Threshold(int32_t thrLevel, int32_t nTrig, int32_t dacReg, i
         return dacMax;
      else
     {
-      // calculate midpoint to cut set in half
-      int32_t dacMid = dacMin + ((dacMax - dacMin) / 2);
+      // calculate midpoint to cut set in half, non symmetric
+      int32_t dacMid = dacMin + step_size*((dacMax - dacMin) / 4);
       int32_t thrMid = CountReadouts(nTrig, dacReg, dacMid);
-      //cout << "midPoint : " << dacMid << "  Threshold : " << thrMid  << " thrLevel: " << thrLevel << " dacMin: " << dacMin << " dacMax: " << dacMax << endl;
+      //cout << "Threshold finding midPoint : " << dacMid << "  Threshold : " << thrMid  << " thrLevel: " << thrLevel << " dacMin: " << dacMin << " dacMax: " << dacMax << endl;
       // three-way comparison
       if ((thrMid > thrLevel && !reverseMode) || (thrMid < thrLevel && reverseMode))
         // threshold is in lower subset
-        return Threshold(thrLevel, nTrig, dacReg, dacMin, dacMid-1, reverseMode);
+        return ThresholdBinary(thrLevel, nTrig, dacReg, dacMin, dacMid-1, reverseMode);
       else if ((thrMid < thrLevel && !reverseMode) || (thrMid > thrLevel && reverseMode))
         // threshold is in upper subset
-        return Threshold(thrLevel, nTrig, dacReg, dacMid+1, dacMax, reverseMode);
+        return ThresholdBinary(thrLevel, nTrig, dacReg, dacMid+1, dacMax, reverseMode);
       else
         // threshold has been found
         return dacMid;
+    }
+}
+
+
+bool CTestboard::FindReadout(int32_t thrLevel, int32_t nTrig, int32_t dacReg, int32_t &dacMin, int32_t &dacMax, bool reverseMode)
+{
+    if (abs(dacMax -dacMin) <= 1) return false;
+    else{
+      // calculate midpoint to cut set in half
+      int32_t dacMid = dacMin + ((dacMax - dacMin) / 2);
+      int32_t thrMid = CountReadouts(nTrig, dacReg, dacMid);
+      //cout << "Find readout midPoint : " << dacMid << "  Threshold : " << thrMid  << " thrLevel: " << thrLevel << " dacMin: " << dacMin << " dacMax: " << dacMax << endl;
+      if (thrMid > thrLevel) return true;
+      else{
+          	if (FindReadout(thrLevel, nTrig, dacReg, dacMin, dacMid, reverseMode)) {
+                dacMax = dacMid;
+                return true;
+            }
+            else if (FindReadout(thrLevel, nTrig, dacReg, dacMid, dacMax, reverseMode)){
+                dacMin = dacMid;
+                return true;
+            }
+      }
     }
 }
 
@@ -463,24 +488,25 @@ int32_t CTestboard::PixelThresholdExtern(int32_t col, int32_t row, int32_t start
 
     bool reverseMode = false;
     if (step < 0) reverseMode = true;
+    int32_t res = -1;
+    if (!reverseMode) res = 256;
 
-	int32_t res = Threshold(thrLevel, nTrig, dacReg, 0, 256, reverseMode);
-    //Check subpart case no threshold was missed
-    if (res >= 255 && !reverseMode) {
-        res = Threshold(thrLevel, nTrig, dacReg, 0, 128, reverseMode);
-        if (res >= 128) res = 256;
-    }
-    if (res <= 0 && reverseMode) {
-        res = Threshold(thrLevel, nTrig, dacReg, 128, 256, reverseMode);
-        if (res <= 128) res = 0;
+    int32_t dacMin = 0, dacMax = 256;
+	if (FindReadout(0, 1, dacReg, dacMin, dacMax, reverseMode)) {
+        res = ThresholdBinary(thrLevel, nTrig, dacReg, dacMin, dacMax, reverseMode);
+        //If binary search fails, find simple threshold
+        if ((res > dacMax && !reverseMode) || (res < dacMin && reverseMode)){
+            int roughThr = ThresholdSimple(dacMin, 4*step/abs(step), 0, 1, dacReg);
+            res = ThresholdSimple(roughThr, 1*step/abs(step), thrLevel, nTrig, dacReg);
+        }
     }
     roc_ClrCal();
     roc_Pix_Mask(col, row);
 	return res;
 }
 
-/*
-int32_t CTestboard::Threshold(int32_t start, int32_t step, int32_t thrLevel, int32_t nTrig, int32_t dacReg, bool test = true)
+
+int32_t CTestboard::ThresholdSimple(int32_t start, int32_t step, int32_t thrLevel, int32_t nTrig, int32_t dacReg)
 {
         int32_t threshold = start, newValue, oldValue, result;
         int stepAbs;
@@ -520,7 +546,7 @@ int32_t CTestboard::Threshold(int32_t start, int32_t step, int32_t thrLevel, int
         return result;
 }
 
-
+/*
 int32_t CTestboard::PixelThreshold(int32_t col, int32_t row, int32_t start, int32_t step, int32_t thrLevel, int32_t nTrig, int32_t dacReg, int32_t xtalk, int32_t cals, int32_t trim)
 {
         int calRow = row;
@@ -545,16 +571,18 @@ void CTestboard::ChipThresholdIntern(int32_t start[], int32_t step, int32_t thrL
 {
   int32_t thr, startValue;
 	for (int col = 0; col < ROC_NUMCOLS; col++)
+	//for (int col = 6; col < 7; col++)
 	{
 		EnableColumn(col);
 		for (int row = 0; row < ROC_NUMROWS; row++)
+		//for (int row = 0; row < 1; row++)
 		{
 			if (step < 0) startValue = start[col*ROC_NUMROWS + row] + 10;
 			else startValue = start[col*ROC_NUMROWS + row];
 			if (startValue < 0) startValue = 0;
 			else if (startValue > 255) startValue = 255;
 			
-			thr = PixelThreshold(col, row, startValue, step, thrLevel, nTrig, dacReg, xtalk, cals, trim[col*ROC_NUMROWS + row]);
+			thr = PixelThresholdExtern(col, row, startValue, step, thrLevel, nTrig, dacReg, xtalk, cals, trim[col*ROC_NUMROWS + row]);
 			res[col*ROC_NUMROWS + row] = thr;
 		}
 		roc_Col_Enable(col, 0);
